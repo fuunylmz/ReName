@@ -1,4 +1,4 @@
-import { AutoComplete, Button, Card, Form, Input, Radio, Space, message } from 'antd';
+import { AutoComplete, Button, Card, Col, Form, Input, Radio, Row, Space, message } from 'antd';
 import { useEffect, useState } from 'react';
 import { api, type AppSettings, type LLMModel } from '../api/client';
 
@@ -75,20 +75,28 @@ export function SettingsPage() {
         <Form.Item label="下载目录，每行一个" name="download_paths_text">
           <Input.TextArea rows={3} placeholder="D:\\Downloads" />
         </Form.Item>
-        <Space style={{ width: '100%' }} align="start">
-          <Form.Item label="电影媒体库目录" name="movie_library_path">
-            <Input placeholder="D:\\Media\\Movies" style={{ width: 360 }} />
-          </Form.Item>
-          <Form.Item label="电视剧媒体库目录" name="tv_library_path">
-            <Input placeholder="D:\\Media\\TV Shows" style={{ width: 360 }} />
-          </Form.Item>
-          <Form.Item label="动漫媒体库目录" name="anime_library_path">
-            <Input placeholder="D:\\Media\\Anime" style={{ width: 360 }} />
-          </Form.Item>
-          <Form.Item label="动漫电影媒体库目录" name="anime_movie_library_path">
-            <Input placeholder="D:\\Media\\Anime Movies" style={{ width: 360 }} />
-          </Form.Item>
-        </Space>
+        <Row gutter={12}>
+          <Col xs={24} md={12} xl={6}>
+            <Form.Item label="电影媒体库目录" name="movie_library_path">
+              <Input placeholder="D:\\Media\\Movies" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12} xl={6}>
+            <Form.Item label="电视剧媒体库目录" name="tv_library_path">
+              <Input placeholder="D:\\Media\\TV Shows" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12} xl={6}>
+            <Form.Item label="动漫媒体库目录" name="anime_library_path">
+              <Input placeholder="D:\\Media\\Anime" />
+            </Form.Item>
+          </Col>
+          <Col xs={24} md={12} xl={6}>
+            <Form.Item label="动漫电影媒体库目录" name="anime_movie_library_path">
+              <Input placeholder="D:\\Media\\Anime Movies" />
+            </Form.Item>
+          </Col>
+        </Row>
         <Space style={{ width: '100%' }} align="start">
           <Form.Item label="TMDB API Key" name="tmdb_api_key">
             <Input.Password style={{ width: 360 }} />
