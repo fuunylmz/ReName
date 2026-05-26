@@ -85,6 +85,7 @@ class SettingsRead(BaseModel):
     movie_library_path: str = ""
     tv_library_path: str = ""
     anime_library_path: str = ""
+    anime_movie_library_path: str = ""
     download_paths: list[str] = []
 
 

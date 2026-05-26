@@ -62,10 +62,13 @@ class TMDBService:
         title_score = SequenceMatcher(None, parsed.title.lower(), str(title or "").lower()).ratio()
         year_score = 1.0 if parsed.year and year == parsed.year else 0.0 if parsed.year else 0.5
         score = round(title_score * 0.75 + year_score * 0.25, 4)
+        media_type = MediaType.TV if endpoint == "tv" else MediaType.MOVIE
+        if parsed.media_type == MediaType.ANIME_MOVIE:
+            media_type = MediaType.ANIME_MOVIE
         return TmdbMatch(
             media_item_id=media_item_id,
             tmdb_id=item["id"],
-            media_type=MediaType.TV if endpoint == "tv" else MediaType.MOVIE,
+            media_type=media_type,
             title=title or "",
             original_title=original_title or "",
             year=year,

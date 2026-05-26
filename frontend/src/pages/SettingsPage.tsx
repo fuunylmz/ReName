@@ -12,6 +12,7 @@ const emptySettings: AppSettings = {
   movie_library_path: '',
   tv_library_path: '',
   anime_library_path: '',
+  anime_movie_library_path: '',
   download_paths: [],
 };
 
@@ -83,6 +84,9 @@ export function SettingsPage() {
           </Form.Item>
           <Form.Item label="动漫媒体库目录" name="anime_library_path">
             <Input placeholder="D:\\Media\\Anime" style={{ width: 360 }} />
+          </Form.Item>
+          <Form.Item label="动漫电影媒体库目录" name="anime_movie_library_path">
+            <Input placeholder="D:\\Media\\Anime Movies" style={{ width: 360 }} />
           </Form.Item>
         </Space>
         <Space style={{ width: '100%' }} align="start">

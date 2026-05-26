@@ -1,4 +1,4 @@
-﻿export type MediaType = 'movie' | 'tv' | 'anime' | 'unknown';
+export type MediaType = 'movie' | 'tv' | 'anime' | 'animemovie' | 'unknown';
 export type MediaStatus =
   | 'discovered'
   | 'parsed'
@@ -68,6 +68,7 @@ export interface AppSettings {
   movie_library_path: string;
   tv_library_path: string;
   anime_library_path: string;
+  anime_movie_library_path: string;
   download_paths: string[];
 }
 

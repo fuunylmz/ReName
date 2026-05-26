@@ -154,10 +154,12 @@ class LLMParserService:
 
     def _normalize(self, parsed: dict[str, Any], item: MediaItem) -> dict[str, Any]:
         media_type = parsed.get("media_type", "unknown")
-        if media_type not in {"movie", "tv", "anime", "unknown"}:
+        if media_type not in {"movie", "tv", "anime", "animemovie", "unknown"}:
             media_type = "unknown"
         if media_type == "tv" and self._looks_like_anime(item, parsed):
             media_type = "anime"
+        if media_type == "movie" and self._looks_like_anime(item, parsed):
+            media_type = "animemovie"
         return {
             "media_type": MediaType(media_type),
             "title": str(parsed.get("title") or item.raw_name),
@@ -193,8 +195,8 @@ class LLMParserService:
                 "rules": [
                     "只识别正片电影或正片剧集。",
                     "如果资源路径、下载分类或标题显示这是番剧、动漫、动画、Anime、Bangumi，"
-                    "media_type 必须输出 anime，不能输出 tv。",
-                    "普通真人电视剧才输出 tv；日本/中文动画番剧即使 TMDB 类型是 tv，也要输出 anime。",
+                    "剧集类 media_type 必须输出 anime，不能输出 tv。",
+                    "如果资源是动漫/动画电影，media_type 必须输出 animemovie，不能输出 movie。",
                     "episodes 字段只能包含正片集数文件，绝对不要包含非正片内容。",
                     "不要把 menu、BDMenu、PV、CM、NCOP、NCED、特典、特典映像、Tokuten、OVA "
                     "等内容识别为正片剧集。",
@@ -206,7 +208,7 @@ class LLMParserService:
                     "只输出 JSON，不要输出解释性文本。",
                 ],
                 "schema": {
-                    "media_type": "movie|tv|anime|unknown",
+                    "media_type": "movie|tv|anime|animemovie|unknown",
                     "title": "影视标题",
                     "original_title": "原始标题",
                     "year": "年份或 null",

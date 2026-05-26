@@ -23,7 +23,7 @@ class RenamePlannerService:
     def _load_runtime_settings(self, session: Session | None) -> dict[str, Any]:
         if not session:
             return {}
-        keys = {"movie_library_path", "tv_library_path", "anime_library_path"}
+        keys = {"movie_library_path", "tv_library_path", "anime_library_path", "anime_movie_library_path"}
         values: dict[str, Any] = {}
         for key in keys:
             setting = session.get(AppSetting, key)
@@ -38,14 +38,16 @@ class RenamePlannerService:
         match: TmdbMatch,
         operation: OperationType,
     ) -> RenamePlan:
-        if match.media_type == MediaType.MOVIE:
+        if match.media_type in {MediaType.MOVIE, MediaType.ANIME_MOVIE}:
             plan = self._movie_plan(item, match)
         else:
             plan = self._tv_plan(item, parsed, match)
         return RenamePlan(media_item_id=item.id or 0, operation=operation, plan=plan)
 
     def _movie_plan(self, item: MediaItem, match: TmdbMatch) -> list[dict[str, str]]:
-        root = Path(self._setting("movie_library_path") or "Movies")
+        root_setting = "anime_movie_library_path" if match.media_type == MediaType.ANIME_MOVIE else "movie_library_path"
+        fallback_root = "Anime Movies" if match.media_type == MediaType.ANIME_MOVIE else "Movies"
+        root = Path(self._setting(root_setting) or fallback_root)
         year = f" ({match.year})" if match.year else ""
         base_name = self._safe(f"{match.title}{year} [tmdbid-{match.tmdb_id}]")
         target_dir = root / base_name

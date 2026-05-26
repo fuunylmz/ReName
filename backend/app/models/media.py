@@ -21,6 +21,7 @@ class MediaType(StrEnum):
     MOVIE = "movie"
     TV = "tv"
     ANIME = "anime"
+    ANIME_MOVIE = "animemovie"
     UNKNOWN = "unknown"
 
 
