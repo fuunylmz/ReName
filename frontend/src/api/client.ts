@@ -76,8 +76,14 @@ export interface LLMModel {
   owned_by: string | null;
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') ?? '';
+
+function apiUrl(path: string): string {
+  return `${API_BASE_URL}${path}`;
+}
+
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
+  const response = await fetch(apiUrl(url), {
     headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
     ...init,
   });
@@ -105,7 +111,7 @@ export const api = {
     }),
   listMediaItems: () => request<MediaItem[]>('/api/media-items'),
   parseMediaItem: (id: number) => request<ParsedResult>(`/api/media-items/${id}/parse`, { method: 'POST' }),
-  parseMediaItemStreamUrl: (id: number) => `/api/media-items/${id}/parse-stream`,
+  parseMediaItemStreamUrl: (id: number) => apiUrl(`/api/media-items/${id}/parse-stream`),
   listParsedResults: (id: number) => request<ParsedResult[]>(`/api/media-items/${id}/parsed`),
   matchMediaItem: (id: number) => request<TmdbMatch[]>(`/api/media-items/${id}/match`, { method: 'POST' }),
   listMatches: (id: number) => request<TmdbMatch[]>(`/api/media-items/${id}/matches`),
