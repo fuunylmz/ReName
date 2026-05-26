@@ -39,7 +39,6 @@ fakefilelist.txt
 *.wmv
 *.flv
 *.webm
-*.ts
 *.m2ts
 *.ass
 *.srt
