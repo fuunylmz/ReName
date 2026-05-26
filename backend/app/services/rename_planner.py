@@ -8,6 +8,7 @@ from app.models.media import AppSetting, MediaItem, MediaType, OperationType, Pa
 from app.services.media_filter import is_extra_video
 
 INVALID_CHARS = '<>:"/\\|?*'
+SUBTITLE_EXTENSIONS = {".ass", ".srt", ".ssa", ".vtt", ".sup"}
 
 
 class RenamePlannerService:
@@ -54,7 +55,7 @@ class RenamePlannerService:
             suffix = Path(source).suffix
             extra = f" - Part {index}" if len(video_files) > 1 else ""
             target = target_dir / f"{base_name}{extra}{suffix}"
-            plans.append({"source": source, "target": str(target)})
+            plans.extend(self._file_with_subtitle_plans(source, target))
         return plans
 
     def _tv_plan(self, item: MediaItem, parsed: ParsedResult, match: TmdbMatch) -> list[dict[str, str]]:
@@ -82,8 +83,40 @@ class RenamePlannerService:
             suffix = Path(source).suffix
             season_dir = root / show_name / f"Season {season:02d}"
             file_name = self._safe(f"{match.title} - S{season:02d}E{episode:02d}{suffix}")
-            plans.append({"source": source, "target": str(season_dir / file_name)})
+            plans.extend(self._file_with_subtitle_plans(source, season_dir / file_name))
         return plans
+
+    def _file_with_subtitle_plans(self, source: str, target: Path) -> list[dict[str, str]]:
+        plans = [{"source": source, "target": str(target)}]
+        target_stem = target.with_suffix("")
+        for subtitle in self._subtitle_files_for(source):
+            suffix = self._subtitle_suffix(Path(source), subtitle)
+            plans.append({"source": str(subtitle), "target": str(target_stem) + suffix})
+        return plans
+
+    def _subtitle_files_for(self, source: str) -> list[Path]:
+        video = Path(source)
+        if not video.exists():
+            return []
+        video_stem = video.stem
+        subtitles: list[Path] = []
+        for file in video.parent.iterdir():
+            if not file.is_file() or file == video:
+                continue
+            if not self._is_subtitle(file):
+                continue
+            if file.stem == video_stem or file.stem.startswith(f"{video_stem}."):
+                subtitles.append(file)
+        return sorted(subtitles)
+
+    def _subtitle_suffix(self, video: Path, subtitle: Path) -> str:
+        stem = subtitle.stem
+        if stem == video.stem:
+            return subtitle.suffix
+        return stem.removeprefix(video.stem) + subtitle.suffix
+
+    def _is_subtitle(self, path: Path) -> bool:
+        return path.suffix.lower() in SUBTITLE_EXTENSIONS
 
     def _safe(self, value: str) -> str:
         return "".join("-" if char in INVALID_CHARS else char for char in value).strip()
