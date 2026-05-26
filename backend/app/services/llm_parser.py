@@ -16,6 +16,7 @@ SEASON_PATTERN = re.compile(r"S(?P<season>\d{1,2})(?:E(?P<episode>\d{1,3}))?", r
 EPISODE_PATTERN = re.compile(r"(?:E|EP|第)(?P<episode>\d{1,3})(?:集)?", re.IGNORECASE)
 QUALITY_PATTERN = re.compile(r"(2160p|1080p|720p|480p|4k)", re.IGNORECASE)
 SOURCE_PATTERN = re.compile(r"(WEB-DL|WEBRip|BluRay|UHD|HDTV|DVDRip)", re.IGNORECASE)
+ANIME_HINTS = ("番剧", "动漫", "动画", "anime", "bangumi", "bdrip")
 
 
 class LLMParserService:
@@ -155,6 +156,8 @@ class LLMParserService:
         media_type = parsed.get("media_type", "unknown")
         if media_type not in {"movie", "tv", "anime", "unknown"}:
             media_type = "unknown"
+        if media_type == "tv" and self._looks_like_anime(item, parsed):
+            media_type = "anime"
         return {
             "media_type": MediaType(media_type),
             "title": str(parsed.get("title") or item.raw_name),
@@ -170,6 +173,17 @@ class LLMParserService:
             "raw_response": parsed,
         }
 
+    def _looks_like_anime(self, item: MediaItem, parsed: dict[str, Any]) -> bool:
+        values = [
+            item.raw_name,
+            item.source_path,
+            str(parsed.get("title") or ""),
+            str(parsed.get("original_title") or ""),
+        ]
+        values.extend(item.video_files[:5])
+        content = " ".join(values).lower()
+        return any(hint in content for hint in ANIME_HINTS)
+
     def _build_prompt(self, item: MediaItem) -> str:
         filtered_files = [file for file in item.video_files if not is_extra_video(file)]
         ignored_files = [file for file in item.video_files if is_extra_video(file)]
@@ -178,6 +192,9 @@ class LLMParserService:
                 "task": "解析 BT 下载影视资源名称，返回结构化 JSON",
                 "rules": [
                     "只识别正片电影或正片剧集。",
+                    "如果资源路径、下载分类或标题显示这是番剧、动漫、动画、Anime、Bangumi，"
+                    "media_type 必须输出 anime，不能输出 tv。",
+                    "普通真人电视剧才输出 tv；日本/中文动画番剧即使 TMDB 类型是 tv，也要输出 anime。",
                     "episodes 字段只能包含正片集数文件，绝对不要包含非正片内容。",
                     "不要把 menu、BDMenu、PV、CM、NCOP、NCED、特典、特典映像、Tokuten、OVA "
                     "等内容识别为正片剧集。",
