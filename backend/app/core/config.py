@@ -1,6 +1,8 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Any
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,6 +20,18 @@ class Settings(BaseSettings):
     tv_library_path: str = ""
     anime_library_path: str = ""
     download_paths: list[str] = []
+
+    @field_validator("cors_origins", "download_paths", mode="before")
+    @classmethod
+    def parse_string_list(cls, value: Any) -> Any:
+        if isinstance(value, str):
+            stripped = value.strip()
+            if not stripped:
+                return []
+            if stripped.startswith("["):
+                return value
+            return [item.strip() for item in stripped.split(",") if item.strip()]
+        return value
 
     model_config = SettingsConfigDict(
         env_file=Path(__file__).resolve().parents[2] / ".env",
